@@ -1,0 +1,12 @@
+{
+  "name": "cstc-customer-dashboard-preview",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "check": "python3 scripts/build.py --check && node --check test/preview.mjs",
+    "test:browser": "node test/preview.mjs"
+  },
+  "engines": {"node": ">=20"}
+}
