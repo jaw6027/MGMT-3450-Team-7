@@ -17,6 +17,7 @@ The export includes its display shell and uses pinned external helpers/icons fro
 ## Included work
 
 - [PROMPT.md](PROMPT.md): the complete customer-dashboard build prompt, including proposed customer segments, data requirements, security and delivery expectations.
+- [INSPECTION-COMPLIANCE-PROMPT.md](INSPECTION-COMPLIANCE-PROMPT.md): the detailed inspection/compliance design brief covering property status, inspections/re-inspections, preparation, cited findings, correction evidence, hard deadlines, permits, reports, prevention and metrics. Saving this specification does not implement its additional workflows.
 - [prototype.fragment.html](prototype.fragment.html): editable source for the reviewed design.
 - [index.html](index.html): standalone export of the interactive preview.
 - [scripts/build.py](scripts/build.py): refreshes the editable fragment inside the exported shell without requiring the original chat environment.
