@@ -116,3 +116,30 @@ Review **https://www.cstcsafety.com/** before describing company offerings. Trea
     Support authorized manual records first and an accounting integration only when connected and verified. Distinguish staff-entered paid records from accounting/payment-confirmed settlement, including partial payments and outstanding balances when implemented. Never invent CSTC pricing, payment terms, late fees, paid status or collection activity.
 
     Restrict staff billing controls and customer invoice views on the server. Current clients may see only their authorized invoices; prospects must not gain billing access by submitting an inquiry. Any due-date reminder service requires configuration and authorization, accurate recipients and delivery reporting. Do not send reminders, create real invoices, initiate payments or charge fees during development. Label all prototype amounts, dates and paid records illustrative and keep prototype edits local.
+
+12. **Appointment and certification-renewal reminders**
+
+    Add customer appointment reminders for confirmed training sessions, service visits, inspections and consultations. Record customer/site, assigned coordinator, appointment type, date, time, explicit IANA time zone and lifecycle. Disambiguate repeated local times around daylight-saving changes and reject nonexistent times. Completing, cancelling or rescheduling an appointment must cancel stale production reminder jobs.
+
+    Add customer-specific certification/credential expiry tracking. Do not assume CSTC issues the credential, that it applies to every customer, or that a universal regulatory renewal interval exists. Record issuer, applicability, source evidence, source verification and the confirmed expiry date. Flag missing or unverified dates; do not schedule customer notifications against unverified requirements. Reminder completion is not proof of valid certification or legal compliance.
+
+    Support editable reminder lead times such as 30, 7 and 1 days before, plus day-of when appropriate; show upcoming, due-today, overdue/follow-up-needed, missing-date and verification-needed states with an owner and next action. Keep appointment follow-up distinct from a confirmed missed appointment. Include an accurate customer-facing message preview and recipient preferences.
+
+    Production delivery requires authenticated tenant/customer permissions, persisted records, authorized recipients, consent/preferences, a configured email/SMS service or in-app notification delivery, a durable timezone-aware scheduler, idempotency and duplicate prevention, rescheduling/cancellation, opt-out handling and delivery/failure evidence. Do not label a record Delivered merely because a job was queued. Until configured, show no outgoing delivery and distinguish local display from an operational notification service.
+
+13. **Company-useful dashboard feature checklist**
+
+    Use the following as the overall product acceptance list, while distinguishing prototype demonstrations from operational services:
+
+    - Request-status counts and a bar chart for Pending, Active and Completed requests, filtered by reporting date and authorized customer/site. Pending means awaiting acknowledgment or assignment; Active means being worked on; Completed means resolved/closed. Derive metrics from request records, not decorative numbers.
+    - Message Center for prospect/current-client inquiries, assignments, replies and follow-up.
+    - Training and service calendar that uses the same appointment, inspection and renewal records as the reminder center; explicit timezone, category/month filters and editable linked records.
+    - Deadline/reminder tracking with responsible owners, source verification, upcoming and overdue states.
+    - Invoice monitoring for upcoming, due-today and overdue amounts with authorized billing follow-up.
+    - Document center for approved plans, reports and training records. Require review after edits, respect recorded restrictions/expiry and permissions, and expose only authorized documents to each customer. Production requires private validated file storage; metadata placeholders are not actual approved documents.
+    - Customer and site profiles containing authorized locations, contacts, relevant needs and service history.
+    - Separate acknowledgment, first-response and resolution calculations from available event timestamps. Explain denominators, date range, source and elapsed/business-hour policy; missing values must not become zero. Do not fabricate benchmarks or contractual guarantees.
+    - Post-service satisfaction feedback and unresolved-concern follow-up with assigned owners and lifecycle tracking.
+    - Renewal and inquiry tracking for current customers' future needs and prospective business.
+
+    Test the full flow, organization/site isolation, source applicability, document review, date/time handling, metric calculations, feedback follow-up and notification blockers. Do not present simulated role/view switching, sample sources, browser-memory records or disconnected services as production authentication, verified company facts or working integrations.

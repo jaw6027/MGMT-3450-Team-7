@@ -1,5 +1,5 @@
 // Optional browser validation: set PLAYWRIGHT_MODULE and CHROMIUM_PATH as needed.
-import {readFileSync} from 'node:fs';
+import {readFileSync,mkdirSync} from 'node:fs';
 import {createServer} from 'node:http';
 import assert from 'node:assert/strict';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
@@ -20,6 +20,7 @@ try {
     else await page.goto(origin);
     const ui=mode==='standalone'?page.frameLocator('#codex-visualization'):page;
     await ui.getByRole('heading',{name:'A clear view of what matters.'}).waitFor();
+    if(mode==='source'&&process.env.PREVIEW_SCREENSHOT_DIR){mkdirSync(process.env.PREVIEW_SCREENSHOT_DIR,{recursive:true});for(const view of ['requests','reminders']){await ui.locator('[data-page="'+view+'"]').click();await ui.locator('#cstc-customer-preview').screenshot({path:process.env.PREVIEW_SCREENSHOT_DIR+'/'+view+'-preview.png'});}}
     for(const [customer,scope] of [['commercial','commercial'],['municipal','municipal'],['partner','partner']]) {
       await ui.locator('#cd-customer').selectOption(customer);
       assert((await ui.locator('#cd-scope').textContent()).includes(scope));
@@ -39,7 +40,7 @@ try {
     await ui.getByRole('heading',{name:'Preview request',exact:true}).waitFor();
     await ui.getByRole('button',{name:'Deadlines & calendar',exact:true}).click();
     await ui.locator('[data-date="2"]').click();
-    assert.match(await ui.locator('#cd-date-detail').textContent(),/December 2, 2026/);
+    assert.match(await ui.locator('#cd-date-detail').textContent(),/Dec(?:ember)? 2, 2026/);
     await ui.getByRole('button',{name:'Message center',exact:true}).click();
     await ui.locator('#cd-inquiry-filter').selectOption('Prospect');
     assert.equal(await ui.locator('[data-thread]').count(),1);
@@ -121,10 +122,136 @@ try {
     assert.match(await ui.locator('#cd-invoice-error').textContent(),/already exists/);
     await ui.getByRole('button',{name:'Cancel',exact:true}).click();
 
+    await ui.locator('[data-page="requests"]').click();
+    assert.equal(await ui.locator('[data-request-count="Pending"]').textContent(),'2');
+    await ui.locator('[data-request-status="local-request-1"]').selectOption('Active');
+    assert.equal(await ui.locator('[data-request-count="Active"]').textContent(),'2');
+    await ui.locator('#cd-request-from').fill('2026-12-04');
+    await ui.locator('#cd-request-from').dispatchEvent('change');
+    await ui.locator('#cd-request-to').fill('2026-12-06');
+    await ui.locator('#cd-request-to').dispatchEvent('change');
+    assert.equal(await ui.locator('[data-request-count="Pending"]').textContent(),'0');
+    assert.equal(await ui.locator('[data-request-count="Completed"]').textContent(),'1');
+    await ui.locator('#cd-request-from').fill('');await ui.locator('#cd-request-from').dispatchEvent('change');
+    await ui.locator('#cd-request-to').fill('');await ui.locator('#cd-request-to').dispatchEvent('change');
+    await ui.locator('[data-page="reminders"]').click();
+    await ui.locator('#cd-reminder-kind').selectOption('Certification renewal');
+    await ui.locator('[data-reminder-message="municipal-renewal-2"]').click();
+    assert.match(await ui.locator('[data-reminder-detail="municipal-renewal-2"]').textContent(),/No customer reminder target is active/);
+    await ui.getByRole('button',{name:'＋ Add sample reminder',exact:true}).click();
+    await ui.locator('#cd-reminder-form [name=title]').fill('Preview appointment');
+    await ui.locator('#cd-reminder-form [name=client]').fill('Sample client');
+    await ui.locator('#cd-reminder-form [name=day]').fill('2026-12-10');
+    await ui.locator('#cd-reminder-form [name=time]').fill('09:00');
+    await ui.locator('#cd-reminder-form [name=channel]').selectOption('Email requested (not configured)');
+    await ui.locator('#cd-save-reminder').click();
+    await ui.locator('[data-reminder-message="local-reminder-1"]').click();
+    assert.match(await ui.locator('[data-reminder-detail="local-reminder-1"]').textContent(),/Not sent/);
+    assert.match(await ui.locator('[data-reminder-detail="local-reminder-1"]').textContent(),/9:00 AM PST/);
+    await ui.getByRole('button',{name:'＋ Add sample reminder',exact:true}).click();
+    await ui.locator('#cd-reminder-type').selectOption('Certification renewal');
+    await ui.locator('#cd-reminder-form [name=title]').fill('Preview credential renewal');
+    await ui.locator('#cd-reminder-form [name=client]').fill('Sample client');
+    await ui.locator('#cd-reminder-form [name=day]').fill('2026-12-09');
+    await ui.locator('#cd-reminder-form [name=reviewed]').check();
+    await ui.locator('#cd-save-reminder').click();
+    assert.match(await ui.locator('#cd-reminder-error').textContent(),/issuer, source reference/);
+    await ui.locator('#cd-reminder-form [name=issuer]').fill('Sample issuer');
+    await ui.locator('#cd-reminder-form [name=source]').fill('Illustrative source reference');
+    await ui.locator('#cd-save-reminder').click();
+    await ui.locator('#cd-reminder-asof').fill('2026-12-10');await ui.locator('#cd-reminder-asof').dispatchEvent('change');
+    const renewal=ui.locator('article').filter({hasText:'Preview credential renewal'});
+    assert.match(await renewal.textContent(),/Renewal overdue/);
+    await ui.locator('[data-reminder-edit="local-reminder-2"]').click();
+    await ui.locator('#cd-reminder-form [name=state]').selectOption('Completed');
+    await ui.locator('#cd-save-reminder').click();
+    await ui.locator('[data-reminder-message="local-reminder-2"]').click();
+    assert.match(await ui.locator('[data-reminder-detail="local-reminder-2"]').textContent(),/No customer reminder target is active/);
+    await ui.getByRole('button',{name:'＋ Add sample reminder',exact:true}).click();
+    await ui.locator('#cd-reminder-form [name=title]').fill('Clock-change test');
+    await ui.locator('#cd-reminder-form [name=client]').fill('Sample client');
+    await ui.locator('#cd-reminder-form [name=day]').fill('2026-03-08');
+    await ui.locator('#cd-reminder-form [name=time]').fill('02:30');
+    await ui.locator('#cd-save-reminder').click();
+    assert.match(await ui.locator('#cd-reminder-error').textContent(),/does not exist/);
+    await ui.locator('#cd-reminder-form [name=day]').fill('2026-11-01');
+    await ui.locator('#cd-reminder-form [name=time]').fill('01:30');
+    await ui.locator('#cd-save-reminder').click();
+    assert.match(await ui.locator('#cd-reminder-error').textContent(),/occurs twice/);
+    await ui.getByText('Clock-change options',{exact:true}).click();
+    await ui.locator('#cd-reminder-form [name=occurrence]').selectOption('Second occurrence');
+    await ui.locator('#cd-save-reminder').click();
+    await ui.locator('[data-reminder-message="local-reminder-3"]').click();
+    assert.match(await ui.locator('[data-reminder-detail="local-reminder-3"]').textContent(),/1:30 AM PST/);
+
+    await ui.locator('[data-page="profiles"]').click();
+    await ui.getByRole('button',{name:'＋ Add sample site',exact:true}).click();
+    await ui.locator('#cd-site-form [name=name]').fill('New sample location');
+    await ui.locator('#cd-site-form [name=location]').fill('Fictional location only');
+    await ui.locator('#cd-save-site').click();
+    await ui.getByRole('heading',{name:'New sample location',exact:true}).waitFor();
+    await ui.getByRole('button',{name:'Edit sample organization',exact:true}).click();
+    await ui.locator('#cd-profile-form [name=name]').fill('Edited sample municipal organization');
+    await ui.locator('#cd-save-profile').click();
+    await ui.getByRole('heading',{name:'Edited sample municipal organization',exact:true}).waitFor();
+    await ui.locator('[data-page="documents"]').click();
+    assert.equal(await ui.locator('[data-document-open]').count(),3);
+    await ui.locator('#cd-document-view').selectOption('Staff preview');
+    await ui.getByRole('button',{name:'＋ Add sample document record',exact:true}).click();
+    await ui.locator('#cd-document-form [name=title]').fill('Sample site report');
+    await ui.locator('#cd-save-document').click();
+    await ui.locator('[data-document-approve="local-document-1"]').click();
+    assert.match(await ui.locator('#cd-document-error').textContent(),/source, permission/);
+    await ui.locator('[data-document-edit="local-document-1"]').click();
+    await ui.locator('#cd-document-form [name=source]').fill('Sample source');
+    await ui.locator('#cd-document-form [name=permission]').fill('Sample permission');
+    await ui.locator('#cd-document-form [name=expires]').fill('2027-01-01');
+    await ui.locator('#cd-save-document').click();
+    await ui.locator('[data-document-approve="local-document-1"]').click();
+    await ui.locator('#cd-document-view').selectOption('Customer preview');
+    assert.equal(await ui.locator('[data-document-open]').count(),4);
+    await ui.locator('#cd-document-view').selectOption('Staff preview');
+    await ui.locator('[data-document-edit="local-document-1"]').click();
+    await ui.locator('#cd-document-form [name=restricted]').check();
+    await ui.locator('#cd-save-document').click();
+    await ui.locator('#cd-document-view').selectOption('Customer preview');
+    assert.equal(await ui.locator('[data-document-open]').count(),3);
+    await ui.locator('[data-page="calendar"]').click();
+    await ui.locator('#cd-calendar-category').selectOption('Training');
+    await ui.locator('#cd-calendar-month').fill('2026-11');
+    await ui.locator('#cd-calendar-month').dispatchEvent('change');
+    await ui.locator('[data-calendar-item="local-reminder-3"]').first().click();
+    assert.match(await ui.locator('#cd-date-detail').textContent(),/Clock-change test/);
+    assert.match(await ui.locator('#cd-date-detail').textContent(),/1:30 AM PST/);
+    await ui.locator('[data-page="requests"]').click();
+    await ui.locator('[data-request-times="local-request-1"]').click();
+    await ui.locator('#cd-request-time-form [name=submittedAt]').fill('2026-12-08T09:00');
+    await ui.locator('#cd-save-request-times').click();
+    assert.match(await ui.locator('#cd-request-time-error').textContent(),/explicit UTC offsets/);
+    await ui.locator('#cd-request-time-form [name=submittedAt]').fill('2026-12-08T09:00:00-08:00');
+    await ui.locator('#cd-request-time-form [name=acknowledgedAt]').fill('2026-12-08T09:00:00-08:00');
+    await ui.locator('#cd-request-time-form [name=firstResponseAt]').fill('2026-12-08T09:10:00-08:00');
+    await ui.locator('#cd-request-time-form [name=resolvedAt]').fill('2026-12-08T10:00:00-08:00');
+    await ui.locator('#cd-save-request-times').click();
+    assert.equal(await ui.locator('[data-response-metric="acknowledgedAt"]').textContent(),'5 min');
+    assert.equal(await ui.locator('[data-response-metric="firstResponseAt"]').textContent(),'18 min');
+    assert.equal(await ui.locator('[data-response-metric="resolvedAt"]').textContent(),'120 min');
+    await ui.locator('[data-page="feedback"]').click();
+    await ui.getByRole('button',{name:'＋ Add sample feedback',exact:true}).click();
+    await ui.locator('#cd-feedback-form [name=rating]').selectOption('5');
+    await ui.locator('#cd-feedback-form [name=comment]').fill('Sample feedback with a follow-up question.');
+    await ui.locator('#cd-feedback-form [name=concern]').check();
+    await ui.locator('#cd-feedback-form [name=followUp]').fill('2026-12-15');
+    await ui.locator('#cd-save-feedback').click();
+    await ui.getByText('4.0',{exact:true}).waitFor();
+    await ui.locator('[data-feedback-status="local-feedback-1"]').selectOption('Resolved');
+    await ui.locator('#cd-feedback-open').check();
+    assert.equal(await ui.locator('[data-feedback-status="local-feedback-1"]').count(),0);
+
     for(const width of [1024,768,390,320]) {
       await page.setViewportSize({width,height:1100});
-      for(const section of ['overview','calendar','performance','resources','preparedness','requests','messages','message-compose','invoices','invoice-compose']) {
-        if(section==='message-compose'){await ui.locator('[data-page="messages"]').click();await ui.getByRole('button',{name:'＋ New inquiry',exact:true}).click();}else if(section==='invoice-compose'){await ui.locator('[data-page="invoices"]').click();await ui.getByRole('button',{name:'＋ Add sample invoice',exact:true}).click();}else await ui.locator(`[data-page="${section}"]`).click();
+      for(const section of ['overview','calendar','performance','resources','preparedness','requests','messages','message-compose','invoices','invoice-compose','reminders','reminder-compose','documents','profiles','feedback']) {
+        if(section==='message-compose'){await ui.locator('[data-page="messages"]').click();await ui.getByRole('button',{name:'＋ New inquiry',exact:true}).click();}else if(section==='invoice-compose'){await ui.locator('[data-page="invoices"]').click();await ui.getByRole('button',{name:'＋ Add sample invoice',exact:true}).click();}else if(section==='reminder-compose'){await ui.locator('[data-page="reminders"]').click();await ui.getByRole('button',{name:'＋ Add sample reminder',exact:true}).click();}else await ui.locator(`[data-page="${section}"]`).click();
         const geometry=await ui.locator('#cstc-customer-preview').evaluate(el=>({content:el.scrollWidth,available:el.clientWidth}));
         assert(geometry.content<=geometry.available+1,`${mode}: overflow at ${width}px on ${section}`);
       }
@@ -133,7 +260,7 @@ try {
     await page.emulateMedia({colorScheme:'dark'});
     await ui.locator('[data-page="overview"]').click();
     assert.deepEqual(errors,[],`${mode}: browser script errors`);
-    console.log(`PASS ${mode}: customer types, alerts, tasks, local requests, message center, invoices, calendar, four responsive widths and dark appearance.`);
+    console.log(`PASS ${mode}: customer types, alerts, tasks, local requests, message center, invoices, reminders, request metrics, documents, profiles, feedback, linked calendar, four responsive widths and dark appearance.`);
     await page.close();
   }
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
