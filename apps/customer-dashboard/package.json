@@ -1,12 +1,17 @@
 {
-  "name": "cstc-customer-dashboard-preview",
-  "version": "0.1.0",
+  "name": "cstc-customer-dashboard",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "python3 scripts/build.py",
-    "check": "python3 scripts/build.py --check && node --check test/preview.mjs",
-    "test:browser": "node test/preview.mjs"
+    "check": "python3 scripts/build.py --check && node --check server.mjs && node --check model.mjs && node --check public/app.js && node --check test/preview.mjs && node --check test/inspection-browser.mjs",
+    "test:browser": "node test/preview.mjs",
+    "start": "node server.mjs",
+    "test": "node --test test/inspection-api.test.mjs",
+    "test:inspection-browser": "node test/inspection-browser.mjs"
   },
-  "engines": {"node": ">=20"}
+  "engines": {
+    "node": ">=24"
+  }
 }

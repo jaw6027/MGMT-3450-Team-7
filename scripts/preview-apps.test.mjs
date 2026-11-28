@@ -9,7 +9,7 @@ test('one launcher serves both previews and closes both ports',async()=>{
   const dataDir=mkdtempSync(join(tmpdir(),'cstc-dual-preview-'));
   let preview;
   try{
-    preview=await startPreviews({socialPort:0,customerPort:0,dataDir});
+    preview=await startPreviews({socialPort:0,customerPort:0,dataDir,customerDataDir:join(dataDir,'customer')});
     const social=await fetch(preview.socialUrl);
     assert.equal(social.status,200);
     assert.match(await social.text(),/CSTC Social Studio/);
@@ -17,6 +17,8 @@ test('one launcher serves both previews and closes both ports',async()=>{
     assert.equal(bootstrap.demo,true);
     const dashboard=await fetch(preview.customerUrl);
     assert.equal(dashboard.status,200);
+    assert.equal((await (await fetch(preview.customerUrl+'/api/bootstrap')).json()).demo,true);
+    assert.equal((await fetch(preview.customerUrl+'/prototype/')).status,200);
     assert.match(await dashboard.text(),/CSTC Customer Dashboard/);
     assert.equal((await fetch(preview.customerUrl+'/missing')).status,404);
     assert.equal((await fetch(preview.customerUrl,{method:'POST'})).status,405);
@@ -33,8 +35,8 @@ test('a busy port fails safely and leaves the existing preview running',async()=
   const secondDir=mkdtempSync(join(tmpdir(),'cstc-busy-preview-'));
   let existing;
   try{
-    existing=await startPreviews({socialPort:0,customerPort:0,dataDir:firstDir});
-    await assert.rejects(startPreviews({socialPort:Number(new URL(existing.socialUrl).port),customerPort:0,dataDir:secondDir}),/already in use/);
+    existing=await startPreviews({socialPort:0,customerPort:0,dataDir:firstDir,customerDataDir:join(firstDir,'customer')});
+    await assert.rejects(startPreviews({socialPort:Number(new URL(existing.socialUrl).port),customerPort:0,dataDir:secondDir,customerDataDir:join(secondDir,'customer')}),/already in use/);
     assert.equal((await fetch(existing.socialUrl)).status,200);
     assert.equal((await fetch(existing.customerUrl)).status,200);
   }finally{

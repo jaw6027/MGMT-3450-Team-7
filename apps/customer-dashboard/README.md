@@ -1,87 +1,96 @@
-# CSTC Customer Dashboard · design prototype
+# CSTC Customer Dashboard
 
-This folder saves the customer-dashboard prompt and the interactive design reviewed in chat. **It is a prototype, not a production customer portal.** The existing Social Studio application is separate and unchanged.
+A persistent manual inspection and compliance workspace now runs at the app root. The existing business dashboard prototype remains available at `/prototype/`; its message/invoice/calendar demonstrations are preserved.
 
-## Open the saved preview
+## Start locally
 
-Download this folder and open **index.html** in a modern browser. GitHub's file view displays source code, not the interactive page. Alternatively, from this folder run:
+Requires **Node.js 24+** (built-in SQLite). No package installation is needed.
 
 ```bash
-python3 -m http.server 3001 --bind 0.0.0.0
+cd apps/customer-dashboard
+npm start
 ```
 
-On the same computer, open `http://localhost:3001`. A browser on a different device needs an authorized hosted preview or other configured connection; `localhost` on an iPad refers to the iPad. No public deployment is included.
+Open **http://localhost:3001 on the same computer running the server**, then select a clearly labeled demonstration identity. Default sample records are fictional; changes persist in ignored `data/customer.sqlite` and `data/files/`. Choose Jordan to try the customer workflow, Sam for qualified inspection review, Casey for coordination, and Alex for administration. Taylor demonstrates a separate customer organization. Identity switching is simulated, not production authentication.
 
-The export includes its display shell and uses pinned external helpers/icons from unpkg.com. The core dashboard interactions also work when those optional network resources are unavailable. The wrapper isolates the preview in a sandboxed frame; browser settings can limit opening external resource links. Resource addresses are visible in the editable source and require verification before operational use.
+To start this app and Social Studio together, run `node scripts/preview-apps.mjs` from the repository root. Both bind to your computer. A server running in Codex Cloud requires a configured forwarding/HTTP preview before its local address can work on a Mac or iPad. Nothing here deploys publicly.
 
-## Included work
+## Working inspection features
 
-- [PROMPT.md](PROMPT.md): the complete customer-dashboard build prompt, including proposed customer segments, data requirements, security and delivery expectations.
-- [INSPECTION-COMPLIANCE-PROMPT.md](INSPECTION-COMPLIANCE-PROMPT.md): the detailed inspection/compliance design brief covering property status, inspections/re-inspections, preparation, cited findings, correction evidence, hard deadlines, permits, reports, prevention and metrics. Saving this specification does not implement its additional workflows.
-- [prototype.fragment.html](prototype.fragment.html): editable source for the reviewed design.
-- [index.html](index.html): standalone export of the interactive preview.
-- [scripts/build.py](scripts/build.py): refreshes the editable fragment inside the exported shell without requiring the original chat environment.
-- [test/preview.mjs](test/preview.mjs): optional browser checks for both the source and standalone export.
+- Organization/property overview with reviewed critical findings first, overdue dates, missing records, upcoming visits and pending verification. Status is evidence-scoped, never a guarantee of legal compliance.
+- Persistent property profiles, customer segments and server-enforced organization/property membership.
+- Inspection and re-inspection calendar/list, search, status/type/coordinator/date filters, explicit time zones, daylight-saving ambiguity checks, customer confirmation and preparation owners/milestones.
+- Source-backed preparation guides with qualified approval and automatic approval invalidation on edits.
+- Immutable original findings/citations, separate severity and lateness, source documents, inspector notes/photos, assigned corrections and original/extended deadlines.
+- Recoverable server-side correction drafts, real file uploads/downloads, multiple evidence submissions, requests for more evidence and independent verification. Reviewers cannot verify their own correction submissions.
+- Linked re-inspections, documentary external acceptance, gated closure, reopen reasons and disputes that never suspend deadlines automatically.
+- Searchable report archive with reviewed and pending versions retained; customers cannot download unreviewed staff reports. Historical approved versions remain available.
+- Project/permit applicability review, application vs issued status, documentary permits, conditions and expiry reminders. No application status authorizes work.
+- Reviewed corrective/preventive tasks, root-cause notes, assigned due dates and monthly/quarterly/annual follow-ups. Completing a recurring task creates one successor; duplicate completion is blocked.
+- Credential renewal source review, portal messages tied to properties and optionally inspections/findings/projects, actual in-app deadline reminders with a persistent personal advance window.
+- Workload chart, timing metrics, creation-date/property filters, missing values distinct from zero, definitions and CSV export.
+- Shared-mode individual password sign-in, session revocation, administrator provisioning, scoped server permissions, optimistic conflict protection and transactional audit history.
+- Mobile navigation, accessible form labels, keyboard focus/dialog handling, text status labels, safe file handling and clear save/error feedback.
 
-The preview lets you switch between **commercial**, **municipal**, and **business partner** experiences. It includes a **Message Center** for prospect and current-client inquiries, incident alert details and local acknowledgment, preparedness checkboxes, sample assistance requests, a deadline calendar, response measures/benchmark placeholders, community-resource references, and color labels. The Message Center has relationship filters, conversation threads, sample replies from either side, owner/follow-up editing, and New / In progress / Awaiting client / Closed states. An **Invoice Due Dates** section shows overdue, due-today, upcoming (next 30 days), future, paid and missing-date sample records. You can change the illustrative as-of date, filter statuses, add/edit local sample records and demonstrate a paid record. Amounts are fictional invoice amounts, not CSTC pricing or confirmed balances. No outgoing notifications, charges or accounting updates occur. It supports narrow mobile layouts and light/dark appearance.
+The app does **not** automatically verify legal requirements, current URLs, authority decisions, permits, credentials or CSTC business claims. Use reviewed real sources and qualified personnel. Branding is provisional. No real client records are seeded.
 
-All customer organizations, assignments, records, metrics and targets are **illustrative**. The proposed segments are not assertions about actual CSTC customers. Brand styling is provisional. Sample deadlines are internal planning targets, not verified legal obligations. The calendar starts in an illustrative December 2026, supports other months, and links to the sample appointment/renewal records. Response figures are calculated from illustrative manual request timestamps. National resource links are proposed references; no availability or local applicability check is claimed.
+## Try the complete manual workflow
 
-## Feature-list implementation status
+1. Open the demonstration as Jordan; select Sample facility A. Review the illustrative critical finding and its next action.
+2. Open Inspections & visits. Review scope and guide, complete preparation tasks and confirm the appointment.
+3. Switch to Casey or Sam to attach the completed inspection report. Sam reviews it. Jordan can then download the released report.
+4. Sam records source-backed findings. Official citations require the citation reference, authority, jurisdiction, original document, source confirmation and agency/regulatory deadline.
+5. Jordan starts the assigned correction, opens **Submit proof of correction**, adds notes/photos and saves a draft. Reload and reopen to recover it; submit for review.
+6. Sam requests more evidence. Jordan submits a new version. Sam independently approves the correction.
+7. If required, Casey schedules a linked re-inspection after the original inspection is complete; Sam reviews its report and records the accepted outcome. Sam records required authority acceptance from documentary evidence. No agency API is implied.
+8. Sam selects **Verify closure requirements**. The server blocks closure until all required checks pass. Add reviewed preventive follow-up and track future obligations.
+9. Use Messages for a property inquiry; review reminders and metrics. Switch to Taylor to confirm the other customer cannot see these records.
 
-| Feature | Working prototype behavior | Still needed for production |
-| --- | --- | --- |
-| Request-status chart | Pending/Active/Completed totals and count bars derive from local request records; status and date filters update them. | Authenticated shared requests, server permissions and audit history. |
-| Message Center | Local inquiry threads, prospect/current-client labels, owners, replies and follow-up. | Secure private intake, persistent conversations, authorized recipients and delivery integrations. |
-| Training/service calendar | Month/category filters show training, service visits, inspections, consultations and renewals from linked reminder records, alongside internal targets. | Shared booking data, permissions, concurrency and scheduling services. |
-| Deadline reminders | Appointment and credential tracking, owner, lead times, timezone, source review, lifecycle and customer-facing message preview. | Persisted verified requirements, consent, durable background scheduling and notification providers. |
-| Invoice tracking | Upcoming, due-today, overdue, paid and missing-date local invoice monitoring. | Authorized accounting records, settlement confirmation and billing integrations. |
-| Document center | Customer preview shows only approved, unrestricted, unexpired sample metadata; edits reset approval; staff preview supports sample review. | Server-enforced permissions, actual private files, validation/scanning, verified approvals and access audit. |
-| Customer/site profiles | Editable fictional organization/site contacts and needs, with local service history. | Persistent authorized customer records and privacy controls. |
-| Response-time metrics | Separate medians for acknowledgment, first response and resolution from available manual sample timestamps; date filters, denominators and chronology checks. | Actual event sources, policy for business hours and verified service targets/benchmarks. |
-| Customer feedback | Sample post-service ratings, comments, unresolved concerns, assigned follow-up and status tracking. | Secure customer-specific survey collection, delivery and persistent follow-up. |
-| Renewal/inquiry tracking | Local renewal source/expiry tracking and prospect/current-client inquiry follow-up. | Verified customer requirements, account relationships and operational notifications. |
+## Shared authenticated mode
 
-### Appointment and credential reminders
+Use a **separate empty data directory**; demo/shared modes cannot share a database. Set the following environment variables in your server’s secure configuration (do not commit secrets):
 
-**Appointments & renewals** has an illustrative as-of date, appointment/renewal filters, upcoming/due-today/overdue or follow-up states and assigned owners. Add/edit sample records, choose local appointment times and IANA zones, set reminder targets (30/7/1 days or day-of), and preview the customer message. Nonexistent local times during spring clock changes are rejected; repeated fall times require an explicit first/second occurrence. A past appointment is flagged for follow-up, not automatically declared missed.
+| Variable | Meaning |
+| --- | --- |
+| `CUSTOMER_DEMO_MODE=false` | Disables simulated identities and illustrative seeding |
+| `CUSTOMER_DATA_DIR` | Absolute private directory for database and media |
+| `CUSTOMER_ADMIN_PASSWORD` | At least 14 characters; initializes username `admin` on first shared startup |
+| `CUSTOMER_COOKIE_SECURE=true` | Required when serving through HTTPS; leave false only for local HTTP testing |
+| `CUSTOMER_PUBLIC_ORIGIN` | Exact HTTPS origin when behind a reverse proxy; e.g. your private configured host |
+| `CUSTOMER_HOST` / `CUSTOMER_PORT` | Bind address/port; defaults `0.0.0.0:3001` for direct startup |
 
-Credential dates require a relevant issuer, applicability/source review and expiry evidence before any active sample target is displayed. Unverified or missing dates are flagged. Closing a reminder stops its sample targets; it does not certify legal compliance or the validity of a replacement credential. Email/SMS preferences are visibly **not configured**, and no messages or jobs are actually scheduled. Local reminders display when you open or change the view; no live clock, background timer, email/SMS sender or push notification service is running.
+Start `node server.mjs` after setting these values. Sign in as `admin`, create organizations/properties and provision individual members. Only Inspector-role members with an explicit qualified designation can approve technical records. Administrators are not automatically qualified inspectors in shared mode. Create a second administrator for access recovery. Roles/scopes are selected on account creation; replacing and disabling an account is currently required to change them. There is no self-service password recovery, SSO or MFA.
 
-Sample response times are median elapsed clock minutes, with no business-hour exclusions. Each metric excludes records missing either required timestamp and shows its own denominator. A measured zero-minute interval is retained. Staff can record explicit-offset sample timestamps; invalid chronology is rejected. Supplying a resolution timestamp marks the local sample request Completed. The source is illustrative/manual; no actual CSTC service performance is claimed.
+Before real customer use, configure TLS, private access, file scanning, host monitoring, backup/retention and verified source material; conduct an independent security/accessibility review. Do not expose demo mode to real customer information.
 
-[Request metrics screenshot](docs/requests-preview.png) · [Reminders screenshot](docs/reminders-preview.png)
+## What remains external or prototype-only
 
-## Important behavior and remaining work
+Email/SMS/push and background reminder delivery are **not configured**. Reminders recalculate in-app; the page refreshes once a minute when no form is active. No messages are emailed. There is no agency filing, automatic permit validation, external rules library or automatic legal compliance assessment. Offline saves/synchronization are not implemented; save a server draft while connected. Malware scanning and managed cloud object storage are not configured.
 
-Interactions change the local preview only. The export may remember the selected customer experience through its browser-side display wrapper. Sample requests, inquiries, replies, assignments, invoice edits, reminders, document records, profiles, feedback, acknowledgments and checklist changes reset on reload. Nothing is sent to CSTC, GitHub or emergency services. Do not enter real personal, medical or confidential information.
+Original invoices, anonymous prospect intake, service-request metrics, customer feedback and other general business modules remain a labeled **browser-memory prototype** at `/prototype/`. Those changes do not persist to the shared inspection database. The new inspection Message Center stores authenticated property conversations, not unsolicited prospect intake. See [architecture and remaining work](ARCHITECTURE.md) for precise boundaries and the [design brief](INSPECTION-COMPLIANCE-PROMPT.md) for the broader target.
 
-Message Center relationships (prospect/current client) are separate from the proposed customer segments. Sample contact information remains only in the active preview memory and is not included in the saved display preferences. Clients in a real deployment must see only their permitted conversations; the preview's shared list does not enforce this. No email, SMS, notification or delivery/read receipt is sent or claimed.
-
-Invoice dates use a fixed illustrative as-of date (December 8, 2026) until changed in the preview. This is not a live aging report. Paid demo records are excluded from overdue counts. Invoice access in production must be limited to authorized billing staff and the relevant current client; the prototype does not enforce billing permissions. There is no invoice issuance, accounting integration, payment processing, collection or reminder delivery.
-
-There is **no production authentication, customer isolation, backend database, incident feed, emergency dispatch, notification delivery, SLA measurement, compliance verification or operational document storage** in this prototype. Customer switching demonstrates proposed layouts, not authorization. Completing a task or acknowledging an alert does not certify safety or resolve an incident. Missing results and benchmarks are labeled unavailable.
-
-The production app described in PROMPT.md still needs implementation: authenticated roles and organization/site/record access checks, persisted reminder/appointment/customer/request/document/feedback data and media, audit history, verified company/customer facts and emergency contacts, source-backed deadlines, actual timestamp-based calculations, configured monitoring/notifications and integrations, and deployment/recovery procedures. No deployment, real request, social post or advertising spend was performed while saving this work.
-
-## Edit and validate
-
-Edit `prototype.fragment.html`, then refresh its exported copy:
+## Tests
 
 ```bash
-npm run build
 npm run check
+npm test
+npm run test:inspection-browser
 ```
 
-Python 3 is required for the build/check script. Node.js 20+ is required for the optional browser checks. There are no runtime package dependencies.
+The browser test requires Playwright and Chromium already installed; set `PLAYWRIGHT_MODULE` to the Playwright module path and `CHROMIUM_PATH` if needed. `npm run test:browser` validates the preserved original prototype. The new browser test covers role switching, appointment preparation/confirmation, correction drafts/files, revisions, independent approval/closure, time-zone/DST validation, report release, calendar, messages, export and mobile layout. API tests cover tenant/property isolation, immutable sources, file release, self-review, stale versions, credential/permit boundaries, session revocation, recurring task duplication and full server-restart recovery. Tests use temporary directories and ephemeral local ports; no notifications, regulatory filings, social posts or payments are sent.
 
-For the browser test, use an existing Playwright installation and Chromium:
+From the repository root also run `node --test scripts/preview-apps.test.mjs` for the dual launcher. Node’s built-in SQLite may display an experimental warning on some Node 24 versions.
 
-```bash
-PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
-CHROMIUM_PATH=/absolute/path/to/chromium npm run test:browser
-```
+## Backup and recovery
 
-If Playwright is installed in the normal Node resolution path, omit `PLAYWRIGHT_MODULE`. `CHROMIUM_PATH` defaults to `/usr/bin/chromium`. The test blocks external network requests, never submits a real request, and writes no customer records. It checks customer switching, alert acknowledgment, preparedness tasks, local request creation, prospect/current-client inquiry creation and filters, reply threads, ownership/follow-up, closing/reopening, text escaping, invoice status/date classification, invoice editing and paid-record exclusion, request metric updates, reminder source review/notification blockers, daylight-saving ambiguity, document approval restrictions, customer/site edits, feedback follow-up, timestamp-derived medians, linked calendar details and layouts at 1024, 768, 390 and 320 pixels, using the actual standalone export as well as the editable source.
+Stop the app cleanly, then back up the **entire private data directory**, including database and files, to encrypted access-controlled storage. Never copy just the SQLite file while it is running in WAL mode. Restore the full directory to a compatible Node 24+ host with the same demo/shared mode and private permissions, then sign in and verify a report download and saved record. Keep secrets separate from backups; rotate passwords/revoke sessions after an incident. No schema version migration is needed for existing customer prototypes because they had no shared database; new SQLite tables initialize on startup.
 
-The original export was produced with the visualization renderer. The build script preserves that shell and replaces exactly the marked source fragment. It refuses ambiguous replacements. Shell or external-helper upgrades require a new reviewed export.
+To reset demonstration data, stop the app and move its demo data directory aside; restart to seed a fresh demonstration. Never do this with shared customer data. Preserve backups and use your organization’s retention requirements.
+
+## Files and screen guide
+
+- [Architecture / data model / permissions / limitations](ARCHITECTURE.md)
+- [Screen annotations and screenshots](docs/INSPECTION-SCREENS.md)
+- `server.mjs` — backend and security boundary; `model.mjs` — validation and summaries.
+- `public/` — new responsive inspection interface.
+- `prototype.fragment.html` — original prototype source; `index.html` — generated original export; `python3 scripts/build.py --check` verifies they match. Do not replace the export manually.
